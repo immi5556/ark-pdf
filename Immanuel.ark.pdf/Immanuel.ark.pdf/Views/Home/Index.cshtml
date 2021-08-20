@@ -1,0 +1,120 @@
+﻿@{
+    Layout = null;
+}
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>PDF Generator : Immanuel Developer</title>
+    <link href="~/css/site.css" rel="stylesheet" />
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script type="text/javascript" src="https://unpkg.com/webcam-easy/dist/webcam-easy.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/ark-js-util@latest/ark-util.js"></script>
+    <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.3.3/jspdf.min.js"></script>
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.js"></script>
+</head>
+<body>
+
+    <div class='card-holder'>
+        <div class='card-wrapper'>
+            <a href='javascript:void(0);' onclick="startCamera()">
+                <div class='card bg-01'>
+                    <span class='card-content'>Camera</span>
+                </div>
+            </a>
+        </div>
+        <div class='card-wrapper'>
+            <a href='#'>
+                <div class='card bg-02'>
+                    <span class='card-content'>long menu item #2</span>
+                </div>
+            </a>
+        </div>
+        <div class='card-wrapper'>
+            <a href='#'>
+                <div class='card bg-03'>
+                    <span class='card-content'>menu item #3</span>
+                </div>
+            </a>
+        </div>
+        <div class='card-wrapper'>
+            <a href='#'>
+                <div class='card bg-04'>
+                    <span class='card-content'>item #4</span>
+                </div>
+            </a>
+        </div>
+        <div class='card-wrapper'>
+            <a href='#'>
+                <div class='card bg-05'>
+                    <span class='card-content'>menu item #5</span>
+                </div>
+            </a>
+        </div>
+        <div class='card-wrapper'>
+            <a href='#'>
+                <div class='card bg-06'>
+                    <span class='card-content'>long menu item #1</span>
+                </div>
+            </a>
+        </div>
+    </div>
+    <div style="margin-left: 50px;margin-top: 8px;">
+        <video id="webcam" autoplay playsinline width="640" height="480"></video>
+        <canvas id="canvas" class="d-none"></canvas>
+        <audio id="snapSound" src="audio/snap.wav" preload="auto"></audio>
+        <br />
+        <button onclick="takePic();">Take Pic</button> <br />
+        <div id="pic-prv">
+
+        </div>
+    </div>
+    <div class="book canvas_div_pdf">
+        @*<div class="page">
+                <div class="subpage">Page 1/2</div>
+            </div>
+            <div class="page">
+                <div class="subpage">Page 2/2</div>
+            </div>*@
+    </div>
+    <script>
+        const webcamElement = document.getElementById('webcam');
+        const canvasElement = document.getElementById('canvas');
+        const snapSoundElement = document.getElementById('snapSound');
+        const webcam = new Webcam(webcamElement, 'user', canvasElement);
+        const startCamera = () => {
+            webcam.start()
+                .then(result => {
+                    console.log("webcam started");
+                })
+                .catch(err => {
+                    console.log(err);
+                });
+        }
+        const prvw = document.querySelector('.book');
+        const takePic = () => {
+            var picture = webcam.snap();
+            var dom = util.textToDom(`<div class="page">
+                <div class="subpage"><img style='width:100%;height:100%;' /></div>
+            </div>`);
+            var img = dom.querySelector('img');
+            img.src = picture;
+            prvw.appendChild(dom);
+        };
+        async function getPDF() {
+
+            var pdf = new jsPDF();
+            $(".book").each(async (i, t) => {
+                var canvas = await html2canvas(t, { allowTaint: true });
+                canvas.getContext('2d');
+                var imgData = canvas.toDataURL("image/jpeg", 1.0);
+                pdf.addImage(imgData, 'JPG', 0, 0, $(t).width(), $(t).height());
+                pdf.addPage();
+                console.log(i)
+                pdf.save("HTML-Document.pdf");
+            });
+        };
+    </script>
+</body>
+</html>
