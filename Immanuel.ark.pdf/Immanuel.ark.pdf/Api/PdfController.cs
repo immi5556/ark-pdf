@@ -25,5 +25,10 @@ namespace Immanuel.ark.pdf.Api
 
         //    return new FileContentResult(arr, "application/pdf");
         //}
+        public FileContentResult Render()
+        {
+            PdfSharp.Pdf.PdfDocument pdf = new PdfSharp.Pdf.PdfDocument();
+            //pdf.AddPage()
+        }
     }
 }
