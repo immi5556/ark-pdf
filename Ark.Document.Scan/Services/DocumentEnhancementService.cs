@@ -149,9 +149,87 @@ public class DocumentEnhancementService : IDocumentEnhancementService
                 return thresholded;
             }
 
+            case ScanFilterMode.PrinterFriendly:
+            {
+                // Flatten the paper's own tint and the uneven lighting so the background
+                // comes out as bare white the printer lays no ink on, then deepen what is
+                // left behind so the text stands out instead of fading with it.
+                using var background = EstimateBackground(src);
+                using var normalized = new Mat();
+                Cv2.Divide(src, background, normalized, 255.0);
+
+                using var levels = BuildPrinterLevelsLut();
+                var result = new Mat();
+                Cv2.LUT(normalized, levels, result);
+                return result;
+            }
+
             default:
                 return src.Clone();
         }
+    }
+
+    /// <summary>
+    /// Approximates the page's background — its paper colour plus whatever shadow and glare
+    /// the camera added — so it can be divided back out.
+    /// </summary>
+    private static Mat EstimateBackground(Mat src)
+    {
+        const int WorkingMaxDimension = 512;
+
+        var scale = Math.Min(1.0, (double)WorkingMaxDimension / Math.Max(src.Width, src.Height));
+        var workingSize = new Size(
+            Math.Max(1, (int)Math.Round(src.Width * scale)),
+            Math.Max(1, (int)Math.Round(src.Height * scale)));
+
+        using var working = new Mat();
+        Cv2.Resize(src, working, workingSize, interpolation: InterpolationFlags.Area);
+
+        // A closing wider than any glyph swallows the text and leaves only the paper; the
+        // blur then smooths away the ghosts of the strokes the closing could not reach.
+        var kernelSize = Math.Max(9, Math.Min(workingSize.Width, workingSize.Height) / 12) | 1;
+        using var kernel = Cv2.GetStructuringElement(MorphShapes.Rect, new Size(kernelSize, kernelSize));
+        Cv2.MorphologyEx(working, working, MorphTypes.Close, kernel);
+        Cv2.GaussianBlur(working, working, new Size(0, 0), kernelSize / 3.0);
+
+        var background = new Mat();
+        Cv2.Resize(working, background, src.Size(), interpolation: InterpolationFlags.Linear);
+        return background;
+    }
+
+    /// <summary>
+    /// Levels curve for the printer-friendly filter: everything at or above the white point
+    /// becomes pure white, everything at or below the black point becomes solid ink, and the
+    /// gamma pulls the strokes in between towards the dark end so they print legibly.
+    /// </summary>
+    private static Mat BuildPrinterLevelsLut()
+    {
+        const double BlackPoint = 60;
+        const double WhitePoint = 200;
+        const double Gamma = 1.4;
+
+        var lut = new Mat(1, 256, MatType.CV_8UC1);
+        for (var i = 0; i < 256; i++)
+        {
+            byte value;
+            if (i >= WhitePoint)
+            {
+                value = 255;
+            }
+            else if (i <= BlackPoint)
+            {
+                value = 0;
+            }
+            else
+            {
+                var t = (i - BlackPoint) / (WhitePoint - BlackPoint);
+                value = (byte)Math.Clamp(Math.Round(255 * Math.Pow(t, Gamma)), 0, 255);
+            }
+
+            lut.Set(0, i, value);
+        }
+
+        return lut;
     }
 
     private static Mat ApplyBrightnessContrast(Mat src, double brightness, double contrast)

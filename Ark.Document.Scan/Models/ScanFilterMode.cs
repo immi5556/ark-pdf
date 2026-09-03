@@ -8,5 +8,6 @@ public enum ScanFilterMode
     Original,
     ColorEnhanced,
     Grayscale,
-    BlackAndWhite
+    BlackAndWhite,
+    PrinterFriendly
 }
