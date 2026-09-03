@@ -332,3 +332,10 @@ ASALocalRun/
 
 # Local History for Visual Studio
 .localhistory/
+
+# Ark.Document.Scan runtime data (uploaded/processed images, SQLite database)
+Ark.Document.Scan/App_Data/
+Ark.Document.Scan/wwwroot/uploads/
+
+.graphify/
+.graphifyignore

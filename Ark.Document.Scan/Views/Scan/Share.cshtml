@@ -1,0 +1,63 @@
+@model ShareViewModel
+@{
+    ViewData["Title"] = "Shared scan";
+
+    var encodedShareUrl = Uri.EscapeDataString(Model.ShareUrl);
+    var encodedText = Uri.EscapeDataString(Model.Title);
+    var encodedSubject = Uri.EscapeDataString(Model.Title);
+    var encodedBody = Uri.EscapeDataString(Model.Description + " " + Model.ShareUrl);
+
+    var facebookShareUrl = $"https://www.facebook.com/sharer/sharer.php?u={encodedShareUrl}";
+    var twitterShareUrl = $"https://twitter.com/intent/tweet?url={encodedShareUrl}&text={encodedText}";
+    var whatsAppShareUrl = $"https://wa.me/?text={encodedText}%20{encodedShareUrl}";
+    var linkedInShareUrl = $"https://www.linkedin.com/sharing/share-offsite/?url={encodedShareUrl}";
+    var mailtoShareUrl = $"mailto:?subject={encodedSubject}&body={encodedBody}";
+}
+
+@section Head {
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="@Model.Title" />
+    <meta property="og:description" content="@Model.Description" />
+    <meta property="og:image" content="@Model.ImageUrl" />
+    <meta property="og:url" content="@Model.ShareUrl" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="@Model.Title" />
+    <meta name="twitter:description" content="@Model.Description" />
+    <meta name="twitter:image" content="@Model.ImageUrl" />
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-7 text-center">
+        <h1 class="mb-3">@Model.Title</h1>
+        <img src="@Model.ImageUrl" class="img-fluid border rounded mb-4" alt="Scanned document" />
+
+        <div class="d-flex justify-content-center gap-2 flex-wrap mb-4">
+            <a class="btn btn-success" href="@Model.DownloadUrl">Download</a>
+            <button type="button" class="btn btn-outline-secondary" id="copy-link-button">Copy link</button>
+        </div>
+
+        <h5 class="mb-3">Share to</h5>
+        <div class="d-flex justify-content-center gap-2 flex-wrap">
+            <a class="btn btn-primary" target="_blank" rel="noopener" href="@facebookShareUrl">Facebook</a>
+            <a class="btn btn-dark" target="_blank" rel="noopener" href="@twitterShareUrl">X / Twitter</a>
+            <a class="btn btn-success" target="_blank" rel="noopener" href="@whatsAppShareUrl">WhatsApp</a>
+            <a class="btn btn-info text-white" target="_blank" rel="noopener" href="@linkedInShareUrl">LinkedIn</a>
+            <a class="btn btn-secondary" href="@mailtoShareUrl">Email</a>
+        </div>
+
+        <p class="text-muted small mt-4" id="share-url-display">@Model.ShareUrl</p>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.getElementById('copy-link-button').addEventListener('click', function () {
+            var button = this;
+            navigator.clipboard.writeText(@Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.ShareUrl))).then(function () {
+                var original = button.textContent;
+                button.textContent = 'Copied!';
+                setTimeout(function () { button.textContent = original; }, 1500);
+            });
+        });
+    </script>
+}

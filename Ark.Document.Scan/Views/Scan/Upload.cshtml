@@ -1,0 +1,66 @@
+@{
+    ViewData["Title"] = "Scan a document";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-7">
+        <h1 class="mb-3">Scan a document</h1>
+        <p class="text-muted">
+            Upload a photo that has a document somewhere in the frame &mdash; at any angle or position.
+            We'll detect its edges, straighten it out, and enhance it automatically. You can then fine-tune
+            the result before downloading it or sharing a link.
+        </p>
+
+        @if (!ViewData.ModelState.IsValid)
+        {
+            <div class="alert alert-danger" role="alert">
+                <div asp-validation-summary="All"></div>
+            </div>
+        }
+
+        <form asp-action="Upload" asp-controller="Scan" method="post" enctype="multipart/form-data" id="upload-form">
+            <div id="drop-zone" class="border rounded p-5 text-center bg-light mb-3">
+                <p class="mb-2">Drag &amp; drop a photo here, or choose a file</p>
+                <input class="form-control" type="file" name="file" id="file-input" accept="image/*" required />
+            </div>
+            <button type="submit" class="btn btn-primary" id="upload-button">Upload &amp; detect document</button>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        (function () {
+            var dropZone = document.getElementById('drop-zone');
+            var fileInput = document.getElementById('file-input');
+            var form = document.getElementById('upload-form');
+            var button = document.getElementById('upload-button');
+
+            ['dragenter', 'dragover'].forEach(function (evt) {
+                dropZone.addEventListener(evt, function (e) {
+                    e.preventDefault();
+                    dropZone.classList.add('border-primary');
+                });
+            });
+
+            ['dragleave', 'drop'].forEach(function (evt) {
+                dropZone.addEventListener(evt, function (e) {
+                    e.preventDefault();
+                    dropZone.classList.remove('border-primary');
+                });
+            });
+
+            dropZone.addEventListener('drop', function (e) {
+                var files = e.dataTransfer.files;
+                if (files && files.length > 0) {
+                    fileInput.files = files;
+                }
+            });
+
+            form.addEventListener('submit', function () {
+                button.disabled = true;
+                button.textContent = 'Uploading and detecting…';
+            });
+        })();
+    </script>
+}

@@ -1,0 +1,87 @@
+@model EditViewModel
+@{
+    ViewData["Title"] = "Adjust your scan";
+}
+
+<h1 class="mb-3">Adjust your scan</h1>
+
+@if (!Model.WasAutoDetected)
+{
+    <div class="alert alert-warning">
+        We couldn't confidently find the document's edges automatically. Drag the four corner handles
+        below onto the document before continuing.
+    </div>
+}
+
+<div class="row">
+    <div class="col-lg-7 mb-4">
+        <h5>1. Fix the corners</h5>
+        <p class="text-muted small">Drag the four handles so they sit exactly on the document's corners.</p>
+        <div id="image-wrapper" style="position: relative; display: inline-block; max-width: 100%;">
+            <img id="source-image" src="@Model.OriginalImageUrl" style="max-width: 100%; height: auto; display: block; user-select: none;" draggable="false" />
+            <svg id="corner-overlay" viewBox="0 0 @Model.ImageWidth @Model.ImageHeight" preserveAspectRatio="xMidYMid meet"
+                 style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; touch-action: none;">
+                <polygon id="corner-polygon" fill="rgba(13,110,253,0.15)" stroke="#0d6efd" stroke-width="@(Math.Max(Model.ImageWidth, Model.ImageHeight) * 0.004)"></polygon>
+            </svg>
+        </div>
+        <div class="mt-2">
+            <button type="button" id="reset-corners" class="btn btn-sm btn-outline-secondary">Reset to detected corners</button>
+        </div>
+    </div>
+
+    <div class="col-lg-5">
+        <h5>2. Preview &amp; enhance</h5>
+        <img id="processed-preview" src="@Model.ProcessedImageUrl" class="img-fluid border rounded mb-3" alt="Processed preview" />
+        <div id="processing-status" class="text-muted small mb-2" style="min-height: 1.2em;"></div>
+
+        <div class="mb-3">
+            <label class="form-label d-block">Rotate</label>
+            <button type="button" id="rotate-button" class="btn btn-outline-secondary">Rotate 90&deg;</button>
+        </div>
+
+        <div class="mb-3">
+            <label for="filter-select" class="form-label">Filter</label>
+            <select id="filter-select" class="form-select">
+                <option value="Original">Original</option>
+                <option value="ColorEnhanced">Color enhanced</option>
+                <option value="Grayscale">Grayscale</option>
+                <option value="BlackAndWhite">Black &amp; white</option>
+            </select>
+        </div>
+
+        <div class="mb-3">
+            <label for="brightness-range" class="form-label">Brightness: <span id="brightness-value">0</span></label>
+            <input type="range" class="form-range" id="brightness-range" min="-100" max="100" value="0" />
+        </div>
+
+        <div class="mb-4">
+            <label for="contrast-range" class="form-label">Contrast: <span id="contrast-value">0</span></label>
+            <input type="range" class="form-range" id="contrast-range" min="-100" max="100" value="0" />
+        </div>
+
+        <div class="d-flex gap-2 flex-wrap">
+            <a id="download-link" href="@Url.Action("Download", "Scan", new { id = Model.Id })" class="btn btn-success">Download</a>
+            <button type="button" id="share-button" class="btn btn-primary">Generate share link</button>
+        </div>
+        <div id="share-result" class="mt-3"></div>
+    </div>
+</div>
+
+<script id="editor-data" type="application/json">
+    {
+        "jobId": "@Model.Id",
+        "imageWidth": @Model.ImageWidth,
+        "imageHeight": @Model.ImageHeight,
+        "corners": @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Corners, new System.Text.Json.JsonSerializerOptions { PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase })),
+        "rotationDegrees": @Model.RotationDegrees,
+        "filterMode": "@Model.FilterMode",
+        "brightness": @Model.Brightness,
+        "contrast": @Model.Contrast,
+        "reprocessUrl": "@Url.Action("Reprocess", "Scan", new { id = Model.Id })",
+        "shareUrl": "@Url.Action("CreateShareLink", "Scan", new { id = Model.Id })"
+    }
+</script>
+
+@section Scripts {
+    <script src="~/js/editor.js" asp-append-version="true"></script>
+}
