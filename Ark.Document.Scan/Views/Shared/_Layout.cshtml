@@ -11,7 +11,7 @@
     @await RenderSectionAsync("Head", required: false)
 </head>
 <body>
-    <header>
+    <header class="no-print">
         <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
             <div class="container-fluid">
                 <a class="navbar-brand" asp-area="" asp-controller="Scan" asp-action="Upload">Ark.Document.Scan</a>
@@ -35,7 +35,7 @@
         </main>
     </div>
 
-    <footer class="border-top footer text-muted">
+    <footer class="border-top footer text-muted no-print">
         <div class="container">
             &copy; 2026 - Ark.Document.Scan
         </div>

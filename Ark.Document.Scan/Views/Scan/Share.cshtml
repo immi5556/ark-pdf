@@ -29,23 +29,26 @@
 <div class="row justify-content-center">
     <div class="col-md-7 text-center">
         <h1 class="mb-3">@Model.Title</h1>
-        <img src="@Model.ImageUrl" class="img-fluid border rounded mb-4" alt="Scanned document" />
+        <img src="@Model.ImageUrl" class="img-fluid border rounded mb-4 print-full-bleed" alt="Scanned document" />
 
-        <div class="d-flex justify-content-center gap-2 flex-wrap mb-4">
+        <div class="d-flex justify-content-center gap-2 flex-wrap mb-4 no-print">
             <a class="btn btn-success" href="@Model.DownloadUrl">Download</a>
             <button type="button" class="btn btn-outline-secondary" id="copy-link-button">Copy link</button>
+            <button type="button" class="btn btn-outline-secondary" id="print-button">Print</button>
         </div>
 
-        <h5 class="mb-3">Share to</h5>
-        <div class="d-flex justify-content-center gap-2 flex-wrap">
-            <a class="btn btn-primary" target="_blank" rel="noopener" href="@facebookShareUrl">Facebook</a>
-            <a class="btn btn-dark" target="_blank" rel="noopener" href="@twitterShareUrl">X / Twitter</a>
-            <a class="btn btn-success" target="_blank" rel="noopener" href="@whatsAppShareUrl">WhatsApp</a>
-            <a class="btn btn-info text-white" target="_blank" rel="noopener" href="@linkedInShareUrl">LinkedIn</a>
-            <a class="btn btn-secondary" href="@mailtoShareUrl">Email</a>
-        </div>
+        <div class="no-print">
+            <h5 class="mb-3">Share to</h5>
+            <div class="d-flex justify-content-center gap-2 flex-wrap">
+                <a class="btn btn-primary" target="_blank" rel="noopener" href="@facebookShareUrl">Facebook</a>
+                <a class="btn btn-dark" target="_blank" rel="noopener" href="@twitterShareUrl">X / Twitter</a>
+                <a class="btn btn-success" target="_blank" rel="noopener" href="@whatsAppShareUrl">WhatsApp</a>
+                <a class="btn btn-info text-white" target="_blank" rel="noopener" href="@linkedInShareUrl">LinkedIn</a>
+                <a class="btn btn-secondary" href="@mailtoShareUrl">Email</a>
+            </div>
 
-        <p class="text-muted small mt-4" id="share-url-display">@Model.ShareUrl</p>
+            <p class="text-muted small mt-4" id="share-url-display">@Model.ShareUrl</p>
+        </div>
     </div>
 </div>
 
@@ -58,6 +61,10 @@
                 button.textContent = 'Copied!';
                 setTimeout(function () { button.textContent = original; }, 1500);
             });
+        });
+
+        document.getElementById('print-button').addEventListener('click', function () {
+            window.print();
         });
     </script>
 }
